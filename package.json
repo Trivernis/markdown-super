@@ -1,0 +1,44 @@
+{
+  "name": "markdown-super",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/fs-extra": "^8.0.0",
+    "@types/markdown-it": "0.0.8",
+    "@types/node": "^12.6.8",
+    "tsc": "^1.20150623.0",
+    "typescript": "^3.5.3"
+  },
+  "dependencies": {
+    "@types/chokidar": "^2.1.3",
+    "chokidar": "^3.0.2",
+    "fs-extra": "^8.1.0",
+    "line-by-line": "^0.1.6",
+    "markdown-it": "^9.0.1",
+    "markdown-it-abbr": "^1.0.4",
+    "markdown-it-anchor": "^5.2.4",
+    "markdown-it-attrs": "^2.4.1",
+    "markdown-it-checkbox": "^1.1.0",
+    "markdown-it-emoji": "^1.4.0",
+    "markdown-it-footnote": "^3.0.2",
+    "markdown-it-highlightjs": "^3.0.0",
+    "markdown-it-imsize": "^2.0.1",
+    "markdown-it-ins": "^2.0.0",
+    "markdown-it-mark": "^2.0.0",
+    "markdown-it-math": "^4.1.1",
+    "markdown-it-mathjax": "^2.0.0",
+    "markdown-it-plantuml": "^1.4.1",
+    "markdown-it-prism": "^2.0.2",
+    "markdown-it-smartarrows": "^1.0.1",
+    "markdown-it-sub": "^1.0.0",
+    "markdown-it-toc-done-right": "^4.0.2",
+    "uninstall": "0.0.0"
+  }
+}
