@@ -1,4 +1,4 @@
-export const markdownPlugins: object = {
+export const markdownPlugins: any = {
     emoji: 'markdown-it-emoji',
     footnote: 'markdown-it-footnote',
     anchor: 'markdown-it-anchor',
@@ -9,10 +9,10 @@ export const markdownPlugins: object = {
     checkbox: 'markdown-it-checkbox',
     imsize: 'markdown-it-imsize',
     highlightjs: 'markdown-it-highlightjs',
-    prism: 'markdown-it-prism',
     smartarrows: 'markdown-it-smartarrows',
     plantuml: 'markdown-it-plantuml',
     mathjax: 'markdown-it-mathjax',
     math: 'markdown-it-math',
+    div: 'markdown-it-div',
     'toc-done-right': 'markdown-it-toc-done-right'
 };

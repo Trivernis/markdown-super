@@ -2,8 +2,11 @@ import * as MarkdownIt from 'markdown-it';
 import * as fsx from 'fs-extra';
 import * as path from 'path';
 import * as chokidar from 'chokidar';
+import * as puppeteer from 'puppeteer';
+import {JSDOM} from 'jsdom';
 import {CommandParser} from "./CommandParser";
 import {EventEmitter} from "events";
+import {PDFFormat} from "puppeteer";
 
 export class Renderer extends EventEmitter {
     private md: MarkdownIt;
@@ -65,6 +68,25 @@ export class Renderer extends EventEmitter {
     }
 
     /**
+     * Renders the file to pdf by rendering the html and printing it to pdf with puppeteer
+     * @param filename
+     * @param output
+     * @param format
+     */
+    public async renderPdf(filename: string, output: string, format: PDFFormat = 'A4') {
+        let html = await this.render(filename);
+        if (this.commandParser.pageFormat)
+            format = this.commandParser.pageFormat;
+        console.log('Launching puppeteer');
+        const browser = await puppeteer.launch();
+        const page = await browser.newPage();
+        await page.setContent(html);
+        console.log(`Starting PDF export (format: ${format}) to ${output}`);
+        await page.pdf({path: output, format: format, margin: {top: '1.5cm', bottom: '1.5cm'}});
+        await browser.close();
+    }
+
+    /**
      * Watches for changes.
      * @param filename
      */
@@ -89,5 +111,12 @@ export class Renderer extends EventEmitter {
      */
     private configure() {
         this.useBefore((a: string, b: string, c: Renderer) => this.commandParser.processCommands(a, b, c));
+        this.useAfter(async (doc: string) => {
+            let dom: JSDOM = new JSDOM(doc);
+            let styleTag = dom.window.document.createElement('style');
+            styleTag.innerHTML = await fsx.readFile(path.join(__dirname, 'styles/default.css'), 'utf-8');
+            dom.window.document.head.appendChild(styleTag);
+            return dom.serialize();
+        });
     }
 }
