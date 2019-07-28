@@ -81,3 +81,15 @@ Warning: be careful not to put too much content in this environment
 because it will be rendered as only ONE page in the pdf output.
 :::
 ```
+
+## Stylesheets
+
+You can include your own stylesheet. It is applied after the default style. The stylesheets are applied in the order they are declared.
+
+```markdown
+[!stylesheet]: path/to/style.css
+```
+
+## Other stuff
+
+Images and stylesheets are included within the html file. All image urls are converted into base64 urls.

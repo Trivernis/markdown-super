@@ -16,6 +16,7 @@
     "@types/jsdom": "^12.2.4",
     "@types/markdown-it": "0.0.8",
     "@types/node": "^12.6.8",
+    "@types/node-fetch": "^2.5.0",
     "@types/winston": "^2.4.4",
     "delete": "^1.1.0",
     "gulp": "^4.0.2",
@@ -50,6 +51,7 @@
     "markdown-it-smartarrows": "^1.0.1",
     "markdown-it-sub": "^1.0.0",
     "markdown-it-toc-done-right": "^4.0.2",
+    "node-fetch": "^2.6.0",
     "puppeteer": "^1.19.0",
     "uninstall": "0.0.0",
     "winston": "^3.2.1"

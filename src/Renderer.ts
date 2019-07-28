@@ -7,11 +7,12 @@ import {JSDOM} from 'jsdom';
 import {CommandParser} from "./CommandParser";
 import {EventEmitter} from "events";
 import {PDFFormat} from "puppeteer";
+import fetch from 'node-fetch';
 
 export class Renderer extends EventEmitter {
     private md: MarkdownIt;
-    private beforeRendering: Function[];
-    private afterRendering: Function[];
+    private readonly beforeRendering: Function[];
+    private readonly afterRendering: Function[];
     private commandParser: CommandParser;
 
     constructor() {
@@ -111,12 +112,54 @@ export class Renderer extends EventEmitter {
      */
     private configure() {
         this.useBefore((a: string, b: string, c: Renderer) => this.commandParser.processCommands(a, b, c));
-        this.useAfter(async (doc: string) => {
-            let dom: JSDOM = new JSDOM(doc);
+        this.useAfter((doc: string) => new JSDOM(doc));
+        // include default style
+        this.useAfter(async (dom: JSDOM) => {
             let styleTag = dom.window.document.createElement('style');
+            // append the default style
             styleTag.innerHTML = await fsx.readFile(path.join(__dirname, 'styles/default.css'), 'utf-8');
             dom.window.document.head.appendChild(styleTag);
-            return dom.serialize();
+            return dom;
         });
+        // include user defined styles
+        this.useAfter(async (dom: JSDOM) => {
+            let userStyles = dom.window.document.createElement('style');
+            userStyles.setAttribute('id', 'user-style');
+            // append all user defined stylesheets
+            for (let stylesheet of this.commandParser.stylesheets) {
+                userStyles.innerHTML  += await fsx.readFile(stylesheet, 'utf-8');
+            }
+            dom.window.document.head.appendChild(userStyles);
+            return dom;
+        });
+        // include all images as base64
+        this.useAfter(async (dom: JSDOM, mainfile: string) => {
+            let document = dom.window.document;
+            let mainFolder = path.dirname(mainfile);
+            let imgs = document.querySelectorAll('img');
+            for (let img of imgs) {
+                let source = img.src;
+                let filepath = source;
+                let base64Url = source;
+                if (!path.isAbsolute(filepath))
+                    filepath = path.join(mainFolder, filepath);
+                if (await fsx.pathExists(filepath)) {
+                    let type = path.extname(source).slice(1);
+                    base64Url = `data:image/${type};base64,`;
+                    base64Url += (await fsx.readFile(filepath)).toString('base64');
+                } else {
+                    try {
+                        let response = await fetch(source);
+                        base64Url = `data:${response.headers.get('content-type')};base64,`;
+                        base64Url += (await response.buffer()).toString('base64');
+                    } catch (error) {
+                        console.error(error);
+                    }
+                }
+                img.src = base64Url;
+            }
+            return dom;
+        });
+        this.useAfter((dom: JSDOM) => dom.serialize());
     }
 }

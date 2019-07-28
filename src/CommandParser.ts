@@ -5,14 +5,11 @@ import {markdownPlugins} from './plugins';
 import {pageFormats} from "./formats";
 import {PDFFormat} from "puppeteer";
 
-namespace Matchers {
-    export const commandMatcher: RegExp = /\[ *!(\w+) *]:? *(.*)/g;
-}
-
 export class CommandParser {
     public projectFiles: string[];
     public pageFormat: PDFFormat;
     public loadedPlugins: string[];
+    public stylesheets: string[];
 
     private resolvePath: {path: string, lines: number}[];
 
@@ -20,9 +17,15 @@ export class CommandParser {
         this.projectFiles = [];
         this.loadedPlugins = [];
         this.resolvePath = [];
+        this.stylesheets = [];
     }
 
     async processCommands(doc: string, docpath: string, renderer: Renderer) {
+        if (process.platform === 'darwin') {
+            doc = doc.replace(/\r/g, '\n'); // mac uses \r as linebreak
+        } else {
+            doc = doc.replace(/\r/g, '');   // linux uses \n, windows \r\n
+        }
         const inputLines: string[] = doc.split('\n');
         let outputLines: string[] = [];
         let mainDir: string = path.dirname(docpath);
@@ -31,7 +34,7 @@ export class CommandParser {
         this.resolvePath.push({path: docpath, lines: inputLines.length});
 
         while (inputLines.length > 0) {
-            let inputLine = inputLines.shift().replace(/\r/, '');
+            let inputLine = inputLines.shift();
             let currentFile = this.resolvePath[this.resolvePath.length - 1]; // keeping track of the current file
             if (currentFile.lines > 0) {
                 currentFile.lines--;
@@ -41,7 +44,7 @@ export class CommandParser {
                     currentFile = this.resolvePath[this.resolvePath.length - 1];
                 }
             }
-            let match: RegExpExecArray = Matchers.commandMatcher.exec(inputLine);
+            let match: RegExpExecArray = /\[ *!(\w+) *\]:? *(.*)/gu.exec(inputLine.replace(/\s/, ''));
 
             if (match && match[0]) { // TODO: stylesheets
                 switch(match[1]) {
@@ -77,6 +80,9 @@ export class CommandParser {
                         if (!this.loadedPlugins.includes(markdownPlugins.div))
                             this.addMarkdownPlugin('div', renderer);
                         outputLines.push('::: .newpage \n:::');
+                        break;
+                    case 'stylesheet':
+                        await this.addStylesheet(match[2], mainDir);
                         break;
                     default:
                         outputLines.push(inputLine);
@@ -133,5 +139,21 @@ export class CommandParser {
         } else {
             throw new Error(`The file ${filepath} can not be included (not found).`);
         }
+    }
+
+    /**
+     * Adds a stylesheet to the result markdown.
+     * @param filepath
+     * @param mainDir
+     */
+    private async addStylesheet(filepath: string, mainDir: string) {
+        let stylepath: string;
+        if (path.isAbsolute(filepath)) {
+            stylepath = path.normalize(filepath);
+        } else {
+            stylepath = path.join(mainDir, filepath);
+        }
+        if ((await fsx.pathExists(stylepath)))
+            this.stylesheets.push(stylepath);
     }
 }
