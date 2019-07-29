@@ -47,6 +47,7 @@
     "markdown-it-mark": "^2.0.0",
     "markdown-it-math": "^4.1.1",
     "markdown-it-mathjax": "^2.0.0",
+    "markdown-it-multimd-table": "^3.2.2",
     "markdown-it-plantuml": "^1.4.1",
     "markdown-it-smartarrows": "^1.0.1",
     "markdown-it-sub": "^1.0.0",

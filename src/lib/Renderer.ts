@@ -7,21 +7,32 @@ import {JSDOM} from 'jsdom';
 import {CommandParser} from "./CommandParser";
 import {EventEmitter} from "events";
 import {PDFFormat} from "puppeteer";
-import fetch from 'node-fetch';
+import {MarkdownConfig} from "./MarkdownConfig";
+import {bundleImages, delay, includeMathJax} from "./utils";
+import {logger} from "./logger";
 
 export class Renderer extends EventEmitter {
     private md: MarkdownIt;
     private readonly beforeRendering: Function[];
     private readonly afterRendering: Function[];
     private commandParser: CommandParser;
+    private config: MarkdownConfig;
 
-    constructor() {
+    constructor(config?: MarkdownConfig) {
         super();
+        this.config = config || new MarkdownConfig();
         this.md = new MarkdownIt();
         this.beforeRendering = [];
         this.afterRendering = [];
         this.commandParser = new CommandParser();
         this.configure();
+    }
+
+    /**
+     * Returns the current config.
+     */
+    public get mdConfig() {
+        return this.config;
     }
 
     /**
@@ -45,7 +56,16 @@ export class Renderer extends EventEmitter {
      * @param mdPlugin
      */
     public addPlugin(mdPlugin: any) {
-        this.md.use(mdPlugin);
+        this.config.plugins.add(mdPlugin);
+    }
+
+    /**
+     * Adds a stylesheet to the config.
+     * The stylesheets will be included after the md-it render.
+     * @param filepath
+     */
+    public addStylesheet(filepath: string) {
+        this.config.stylesheets.add(filepath)
     }
 
     /**
@@ -56,14 +76,19 @@ export class Renderer extends EventEmitter {
         filename = path.resolve(filename);
         let document = await fsx.readFile(filename, 'utf-8');
         document = document.replace(/\r\n/g, '\n');
+        logger.verbose(`Applying ${this.beforeRendering.length} beforeRendering functions...`);
         for (let func of this.beforeRendering) {
             document = await func(document, filename, this);
         }
+        this.addConfigPlugins();
+        logger.verbose(`Rendering with markdown-it and ${this.config.plugins.size} plugins`);
         let result: string = this.md.render(document);
 
+        logger.verbose(`Applying ${this.afterRendering.length} afterRendering functions...`);
         for (let func of this.afterRendering) {
             result = await func(result, filename, this);
         }
+        logger.verbose('HTML rendered');
         this.emit('rendered', result);
         return result;
     }
@@ -78,12 +103,25 @@ export class Renderer extends EventEmitter {
         let html = await this.render(filename);
         if (this.commandParser.pageFormat)
             format = this.commandParser.pageFormat;
-        console.log('Launching puppeteer');
+        logger.info('Launching puppeteer');
         const browser = await puppeteer.launch();
         const page = await browser.newPage();
+        logger.info('Setting and evaluating content');
         await page.setContent(html);
-        console.log(`Starting PDF export (format: ${format}) to ${output}`);
-        await page.pdf({path: output, format: format, margin: {top: '1.5cm', bottom: '1.5cm'}});
+        await page.waitForFunction('window.MathJax.isReady === true');
+        await delay(1000);
+        logger.info(`Starting PDF export (format: ${format}) to ${output}`);
+        await page.pdf({
+            path: output,
+            format: format,
+            printBackground: true,
+            margin: {
+                top: '1.5cm',
+                bottom: '1.5cm',
+                left: '1.5cm',
+                right: '1.5cm'
+            }
+        });
         await browser.close();
     }
 
@@ -94,11 +132,11 @@ export class Renderer extends EventEmitter {
     public watch(filename: string) {
         const watcher = chokidar.watch(filename);
         watcher.on('change', async () => {
-            console.log('Change detected. Rerendering');
+            logger.info('Change detected. Rerendering');
             let start = Date.now();
             this.md = new MarkdownIt();
             await this.render(filename);
-            console.log(`Rendering took ${Date.now() - start} ms.`);
+            logger.info(`Rendering took ${Date.now() - start} ms.`);
         });
         this.on('rendered', () => {
             watcher.add(this.commandParser.projectFiles);
@@ -115,51 +153,51 @@ export class Renderer extends EventEmitter {
         this.useAfter((doc: string) => new JSDOM(doc));
         // include default style
         this.useAfter(async (dom: JSDOM) => {
-            let styleTag = dom.window.document.createElement('style');
-            // append the default style
-            styleTag.innerHTML = await fsx.readFile(path.join(__dirname, 'styles/default.css'), 'utf-8');
-            dom.window.document.head.appendChild(styleTag);
+            logger.debug('Including default style');
+            let stylePath = path.join(__dirname, '../styles/default.css');
+            let document = dom.window.document;
+
+            if (this.config.bundle) {
+                let styleTag = document.createElement('style');
+                styleTag.innerHTML = await fsx.readFile(stylePath, 'utf-8');
+                document.head.appendChild(styleTag);
+            } else {
+                let linkTag = document.createElement('link');
+                linkTag.rel = 'stylesheet';
+                linkTag.href = stylePath;
+                document.head.appendChild(linkTag);
+            }
             return dom;
         });
         // include user defined styles
         this.useAfter(async (dom: JSDOM) => {
+            logger.debug(`Including ${this.config.stylesheets.size} user styles.`);
             let userStyles = dom.window.document.createElement('style');
             userStyles.setAttribute('id', 'user-style');
-            // append all user defined stylesheets
-            for (let stylesheet of this.commandParser.stylesheets) {
+            for (let stylesheet of this.config.stylesheets) {
+                logger.debug(`Including ${stylesheet}`);
                 userStyles.innerHTML  += await fsx.readFile(stylesheet, 'utf-8');
             }
             dom.window.document.head.appendChild(userStyles);
             return dom;
         });
+        this.useAfter(includeMathJax);
         // include all images as base64
-        this.useAfter(async (dom: JSDOM, mainfile: string) => {
-            let document = dom.window.document;
-            let mainFolder = path.dirname(mainfile);
-            let imgs = document.querySelectorAll('img');
-            for (let img of imgs) {
-                let source = img.src;
-                let filepath = source;
-                let base64Url = source;
-                if (!path.isAbsolute(filepath))
-                    filepath = path.join(mainFolder, filepath);
-                if (await fsx.pathExists(filepath)) {
-                    let type = path.extname(source).slice(1);
-                    base64Url = `data:image/${type};base64,`;
-                    base64Url += (await fsx.readFile(filepath)).toString('base64');
-                } else {
-                    try {
-                        let response = await fetch(source);
-                        base64Url = `data:${response.headers.get('content-type')};base64,`;
-                        base64Url += (await response.buffer()).toString('base64');
-                    } catch (error) {
-                        console.error(error);
-                    }
-                }
-                img.src = base64Url;
-            }
-            return dom;
-        });
+        if (this.config.bundle)
+            this.useAfter(bundleImages);
         this.useAfter((dom: JSDOM) => dom.serialize());
+    }
+
+    /**
+     * Adds all plugins from the config to markdown-it.
+     */
+    private addConfigPlugins() {
+        for (let plugin of this.config.plugins) {
+            try {
+                this.md.use(plugin);
+            } catch (err) {
+                logger.error(err);
+            }
+        }
     }
 }

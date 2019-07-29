@@ -4,18 +4,18 @@ import {Renderer} from "./Renderer";
 import {markdownPlugins} from './plugins';
 import {pageFormats} from "./formats";
 import {PDFFormat} from "puppeteer";
+import {getMarkdownPlugin} from "./utils";
+import {logger} from "./logger";
 
 export class CommandParser {
     public projectFiles: string[];
     public pageFormat: PDFFormat;
-    public loadedPlugins: string[];
     public stylesheets: string[];
 
-    private resolvePath: {path: string, lines: number}[];
+    private readonly resolvePath: {path: string, lines: number}[];
 
     constructor() {
         this.projectFiles = [];
-        this.loadedPlugins = [];
         this.resolvePath = [];
         this.stylesheets = [];
     }
@@ -50,9 +50,9 @@ export class CommandParser {
                 switch(match[1]) {
                     case 'use':
                         let plugins = match[2].split(',');
-                        console.log(`Using plugins: ${match[2]}`);
+                        logger.verbose(`Adding plugins: ${match[2]}`);
                         for (let mdPlugin of plugins) {
-                            this.addMarkdownPlugin(mdPlugin.replace(/^ *| *$/g, ''), renderer);
+                            renderer.addPlugin(getMarkdownPlugin(mdPlugin.replace(/^ *| *$/g, '')));
                         }
                         break;
                     case 'include':
@@ -62,10 +62,10 @@ export class CommandParser {
                                 inputLines.unshift(...included);
                                 this.resolvePath.push({path: match[2], lines: included.length});
                             } else {
-                                console.error(`Circular reference detected. Skipping include ${match[2]}`);
+                                logger.warning(`Circular reference detected. Skipping include ${match[2]}`);
                             }
                         } catch (err) {
-                            console.error(err.message);
+                            logger.error(err.message);
                             outputLines.push(inputLine);
                         }
                         break;
@@ -74,11 +74,10 @@ export class CommandParser {
                             // @ts-ignore
                             this.pageFormat = match[2];
                         else
-                            console.log('Invalid page format or format already set: ' + match[2]);
+                            logger.warning('Invalid page format or format already set: ' + match[2]);
                         break;
                     case 'newpage':
-                        if (!this.loadedPlugins.includes(markdownPlugins.div))
-                            this.addMarkdownPlugin('div', renderer);
+                        renderer.addPlugin(getMarkdownPlugin(markdownPlugins.div));
                         outputLines.push('::: .newpage \n:::');
                         break;
                     case 'stylesheet':
@@ -93,29 +92,6 @@ export class CommandParser {
         }
 
         return outputLines.join('\n');
-    }
-
-    /**
-     * Adds a markdown-it plugin to the renderer
-     * @param pluginName
-     * @param renderer
-     */
-    private addMarkdownPlugin(pluginName: string, renderer: Renderer): void {
-        try {
-            // @ts-ignore
-            let moduleName = markdownPlugins[pluginName];
-            if (moduleName) {
-                let plugin: any = require(moduleName);
-                if (plugin && !this.loadedPlugins.includes(plugin)) {
-                    renderer.addPlugin(plugin);
-                    this.loadedPlugins.push(plugin);
-                }
-            } else {
-                console.error(`Plugin "${pluginName}" not found.`);
-            }
-        } catch (err) {
-            console.error(err);
-        }
     }
 
     /**

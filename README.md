@@ -14,7 +14,7 @@ Optional arguments:
   -h, --help   Show this help message and exit.
   -w, --watch  Watch files for changes
   --pdf        Output as pdf
-
+  --bundle     Bundle all images and script in one html
 
 ```
 
@@ -35,6 +35,8 @@ The usage of a markdown-it plugin inside a document can be decleared by using
 
 ```markdown
 [!use]: plugin1, plugin2, plugin3
+or
+[!use]: # (plugin1, plugin2, plugin3)
 ```
 
 The plugin names are listed in the following table. Basically it is just the package name with the markdown-it removed:
@@ -56,6 +58,7 @@ The plugin names are listed in the following table. Basically it is just the pac
 | markdown-it-mathjax  | mathjax
 | markdown-it-math     | math
 | markdown-it-div      | div
+| markdown-it-multimd-table | multimd-table
 
 For example you can declare the use of `markdown-it-emoji` the following:
 
@@ -88,6 +91,24 @@ You can include your own stylesheet. It is applied after the default style. The 
 
 ```markdown
 [!stylesheet]: path/to/style.css
+```
+
+## Configuration file
+
+You can also define plugins, stylesheets and other stuff by using a `mdconf.json` file in the same directory as the main markdown file. Example config:
+
+```json
+{
+  "format": "A4",
+  "plugins": [
+    "emoji",
+    "footnote",
+    "markdown-it-multimd-table"
+  ],
+  "stylesheets": [
+    "customstyle.css"
+  ]
+}
 ```
 
 ## Other stuff
