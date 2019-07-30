@@ -1,8 +1,17 @@
 import * as fsx from 'fs-extra';
 import * as path from 'path';
 import {getMarkdownPlugin} from "./utils";
+import {logger} from "./logger";
 
 const confName = 'mdconfig.json';
+const confDir = `${__dirname}../../configs`;
+
+/**
+ * Configs that can be extended
+ */
+const configs: any = {
+    "full": `${confDir}/full-${confName}`
+};
 
 /**
  * Markdown config class for easyer access on the configuration.
@@ -33,6 +42,11 @@ export class MarkdownConfig {
      */
     private loadData() {
         let configData = fsx.readJsonSync(this.filename);
+
+        if (configData.extends && configs[configData.extends]) { // assign the base config to the config data
+            logger.info(`Extending config with ${configData.extends}`);
+            Object.assign(configData, fsx.readJsonSync(configs[configData.extends]));
+        }
         this.format = configData.format || this.format;
         this.bundle = configData.bundle;
         if (configData.plugins)
@@ -48,5 +62,6 @@ export class MarkdownConfig {
     public save(filename?: string) {
         let confFile = filename || this.filename;
         fsx.writeJsonSync(confFile, this);
+        logger.info(`Config file saved as ${filename}.`);
     }
 }

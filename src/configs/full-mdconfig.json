@@ -1,0 +1,27 @@
+{
+  "plugins": [
+    "emoji",
+    "footnote",
+    "anchor",
+    "mark",
+    "sub",
+    "attrs",
+    "abbr",
+    "checkbox",
+    "imsize",
+    "highlightjs",
+    "smartarrows",
+    "plantuml",
+    "math",
+    "div",
+    "multimd-table",
+    "toc-done-right",
+    "kbd",
+    "center-text",
+    "video",
+    "header-sections",
+    "task-checkbox",
+    "underline",
+    "implicit-figures"
+  ]
+}

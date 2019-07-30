@@ -4,6 +4,7 @@ import {extname, dirname} from 'path';
 import {ArgumentParser} from "argparse";
 import {MarkdownConfig} from "./lib/MarkdownConfig";
 import {logger} from "./lib/logger";
+import {markdownPlugins} from "./lib/plugins";
 
 /**
  * Returns the filename without the extension.
@@ -14,12 +15,13 @@ function noExt(file: string): string {
 }
 
 async function main() {
-    logger.profile('processing');
+    let start = process.hrtime();
     const parser = new ArgumentParser({
         addHelp: true
     });
     parser.addArgument('file',{
-        help: 'The file to render'
+        help: 'The file to render',
+        required: false
     });
     parser.addArgument(
         ['-w', '--watch'],
@@ -45,7 +47,24 @@ async function main() {
             action: 'storeTrue'
         }
     );
+    parser.addArgument(
+        ['--plugins'],
+        {
+            help: 'prints out the plugins, that can be used.',
+            required: false,
+            action: 'storeTrue'
+        }
+    );
     let args = parser.parseArgs();
+
+    if (args.plugins) {
+        console.log('Plugin Name      |  Markdown-it plugin');
+        console.log('-----------------|---------------------');
+        console.log(Object.entries(markdownPlugins).map((x:any) => x[0]
+            .padEnd(16, ' ') + ' | ' + x[1].module).join('\n'));
+        process.exit(0);
+    }
+
     let config = new MarkdownConfig(dirname(args.file));
     config.bundle = args.bundle || args.pdf;
     let renderer = new Renderer(config);
@@ -72,7 +91,8 @@ async function main() {
         await writeFile(outputFile, html);
         console.log(`File stored as ${outputFile}`);
     }
-    logger.profile('processing');
+    let diff = process.hrtime(start);
+    logger.info(`Total:  ${(diff[0]*1e9 + diff[1])/1e6} ms`);
 }
 4
 main();

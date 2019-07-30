@@ -1,18 +1,74 @@
 export const markdownPlugins: any = {
-    emoji: 'markdown-it-emoji',
-    footnote: 'markdown-it-footnote',
-    anchor: 'markdown-it-anchor',
-    mark: 'markdown-it-mark',
-    sub: 'markdown-it-sub',
-    attrs: 'markdown-it-attrs',
-    abbr: 'markdown-it-abbr',
-    checkbox: 'markdown-it-checkbox',
-    imsize: 'markdown-it-imsize',
-    highlightjs: 'markdown-it-highlightjs',
-    smartarrows: 'markdown-it-smartarrows',
-    plantuml: 'markdown-it-plantuml',
-    mathjax: 'markdown-it-mathjax',
-    math: 'markdown-it-math',
-    div: 'markdown-it-div',
-    'toc-done-right': 'markdown-it-toc-done-right'
+    emoji: {
+        module: 'markdown-it-emoji'
+    },
+    footnote: {
+        module: 'markdown-it-footnote'
+    },
+    anchor: {
+        module: 'markdown-it-anchor'
+    },
+    mark: {
+        module: 'markdown-it-mark'
+    },
+    sub: {
+        module: 'markdown-it-sub'
+    },
+    attrs: {
+        module: 'markdown-it-attrs'
+    },
+    abbr: {
+        module: 'markdown-it-abbr'
+    },
+    checkbox: {
+        module: 'markdown-it-checkbox'
+    },
+    imsize: {
+        module: 'markdown-it-imsize'
+    },
+    highlightjs: {
+        module: 'markdown-it-highlightjs'
+    },
+    smartarrows: {
+        module: 'markdown-it-smartarrows'
+    },
+    plantuml: {
+        module: 'markdown-it-plantuml'
+    },
+    math: {
+        module: 'markdown-it-math'
+    },
+    div: {
+        module: 'markdown-it-div'
+    },
+    kbd: {
+        module: 'markdown-it-kbd'
+    },
+    video: {
+        module: 'markdown-it-video'
+    },
+    underline: {
+        module: 'markdown-it-underline'
+    },
+    'multimd-table': {
+        module: 'markdown-it-multimd-table'
+    },
+    'toc-done-right': {
+        module: 'markdown-it-toc-done-right'
+    },
+    'center-text': {
+        module: 'markdown-it-center-text'
+    },
+    'header-sections': {
+        module: 'markdown-it-header-sections'
+    },
+    'task-checkbox': {
+        module: 'markdown-it-task-checkbox'
+    },
+    'implicit-figures': {
+        module: 'markdown-it-implicit-figures',
+        options: {
+            figcaption: true
+        }
+    }
 };

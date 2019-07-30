@@ -77,17 +77,26 @@ export class Renderer extends EventEmitter {
         let document = await fsx.readFile(filename, 'utf-8');
         document = document.replace(/\r\n/g, '\n');
         logger.verbose(`Applying ${this.beforeRendering.length} beforeRendering functions...`);
+        let start: any = process.hrtime();
+
         for (let func of this.beforeRendering) {
             document = await func(document, filename, this);
         }
+        let diff: any = process.hrtime(start);
+        logger.info(`Pre-Rendering:  ${(diff[0]*1e9 + diff[1])/1e6} ms`);
         this.addConfigPlugins();
-        logger.verbose(`Rendering with markdown-it and ${this.config.plugins.size} plugins`);
+        start = process.hrtime();
         let result: string = this.md.render(document);
+        diff = process.hrtime(start);
+        logger.info(`Rendering:      ${(diff[0]*1e9 + diff[1])/1e6} ms`);
 
-        logger.verbose(`Applying ${this.afterRendering.length} afterRendering functions...`);
+        start = process.hrtime();
+
         for (let func of this.afterRendering) {
             result = await func(result, filename, this);
         }
+        diff = process.hrtime(start);
+        logger.info(`Post-Rendering: ${(diff[0]*1e9 + diff[1])/1e6} ms`);
         logger.verbose('HTML rendered');
         this.emit('rendered', result);
         return result;
@@ -108,8 +117,8 @@ export class Renderer extends EventEmitter {
         const page = await browser.newPage();
         logger.info('Setting and evaluating content');
         await page.setContent(html);
-        await page.waitForFunction('window.MathJax.isReady === true');
-        await delay(1000);
+        await page.waitForFunction('window.MathJax.isReady');
+        await page.waitForFunction('!!document.querySelector("#MathJax_Message").style.display');
         logger.info(`Starting PDF export (format: ${format}) to ${output}`);
         await page.pdf({
             path: output,
@@ -194,7 +203,7 @@ export class Renderer extends EventEmitter {
     private addConfigPlugins() {
         for (let plugin of this.config.plugins) {
             try {
-                this.md.use(plugin);
+                this.md.use(plugin.module, plugin.options);
             } catch (err) {
                 logger.error(err);
             }

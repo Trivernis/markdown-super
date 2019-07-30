@@ -15,3 +15,4 @@
 - auto base64 converting for images for a standalone html when bundling flag is set
 - support for `mdconf.json`config file
 - MathJax script to html
+- `mdconfig.json` extensions with `extends: "name"`

@@ -22,10 +22,17 @@ function compileSass() {
         .pipe(dest('dist/styles'));
 }
 
-task('cleanBuild', series(clearDist, compileTypescript, compileSass));
-task('default', series(compileTypescript, compileSass));
+function moveOther() {
+    return src(['src/**/*', '!src/**/*.ts', '!src/**/*.sass'])
+        .pipe(dest('dist'));
+}
+
+
+task('cleanBuild', series(clearDist, compileTypescript, compileSass, moveOther));
+task('default', series(compileTypescript, compileSass, moveOther));
 task('watch', () => {
-    series(compileSass, compileTypescript);
+    series(compileSass, compileTypescript, moveOther);
     watch('src/**/*.sass', series(compileSass));
     watch('**/*.ts', compileTypescript);
+    watch(['src/**/*', '!src/**/*.ts', '!src/**/*.sass'], moveOther);
 });

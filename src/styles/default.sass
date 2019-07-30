@@ -1,5 +1,4 @@
 @import includes/vars
-//@import includes/w3-math
 @import includes/highlighjs
 
 body
@@ -24,6 +23,19 @@ img
   max-width: 100%
   height: auto
 
+hr
+  border: 0.1em solid $inactive
+
+kbd
+  border: 1px solid $inactive
+  padding: 0.1em
+  background-color: $backgroundSecondary
+  box-shadow: 0 0.1em 0.1em $inactive
+
+figcaption
+  margin: 0.5em
+  font-style: italic
+
 .page
   page-break-before: always
   page-break-after: always
@@ -31,3 +43,6 @@ img
 
 .newpage
   page-break-after: always
+
+.text-align-center
+  text-align: center

@@ -55,19 +55,32 @@ export function includeMathJax(dom: JSDOM): JSDOM {
 
 /**
  * Returns the markdown plugin associated with the pluginName
+ * The plugin is first searched in the plugins definition.
+ *  Then it is tried to require the plugin.
  * @param pluginName
  */
-export function getMarkdownPlugin(pluginName: string) {
+export function getMarkdownPlugin(pluginName: any) {
     logger.debug(`Trying to resolve plugin ${pluginName}`);
     if (markdownPlugins[pluginName]) {
-        return require(markdownPlugins[pluginName]);
+        if (markdownPlugins[pluginName].module.constructor.name === 'String')
+            markdownPlugins[pluginName].module = require(markdownPlugins[pluginName].module);
+        return markdownPlugins[pluginName];
     } else {
         try {
-            let plugin = require(pluginName);
-            if (plugin)
-                return plugin;
+            if (pluginName.module) {
+                if (pluginName.module.constructor.name === 'String')
+                    pluginName.module = require(pluginName.module);
+                return pluginName
+            } else {
+                let plugin = require(pluginName);
+                if (plugin)
+                    return {
+                        module: plugin
+                    };
+            }
         } catch (err) {
-            console.error(`Module ${pluginName} not found.`);
+            console.error(`Module ${JSON.stringify(pluginName)} not found.`);
+            console.debug(err);
         }
     }
 }
