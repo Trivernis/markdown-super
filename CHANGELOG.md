@@ -16,3 +16,4 @@
 - support for `mdconf.json`config file
 - MathJax script to html
 - `mdconfig.json` extensions with `extends: "name"`
+- variables prefixed with `$` and system variables prefixed with `$$`

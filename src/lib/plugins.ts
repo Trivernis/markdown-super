@@ -70,5 +70,8 @@ export const markdownPlugins: any = {
         options: {
             figcaption: true
         }
+    },
+    'inline-comments': {
+        module: 'markdown-it-inline-comments'
     }
 };

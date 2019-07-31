@@ -22,6 +22,7 @@
     "header-sections",
     "task-checkbox",
     "underline",
-    "implicit-figures"
+    "implicit-figures",
+    "inline-comments"
   ]
 }

@@ -74,6 +74,32 @@ You can include your own stylesheet. It is applied after the default style. The 
 [!stylesheet]: path/to/style.css
 ```
 
+## Variables
+
+Variables are prefixed with `$`.
+You can define and use variables like this:
+
+Defining:
+```
+$varname = value
+$fruit = apple
+```
+
+Using:
+```
+I'm eating an $fruit.
+```
+
+There are system variables that are prefixed with `$$`.
+Currently you can use
+
+variable | value           | example value     
+---------|-----------------|--------------
+$now     | current datetime| 31.07.2019 21:03:47
+$date    | current date    | 31.07.2019
+$time    | current time    | 21:03:47
+
+
 ## Configuration file
 
 You can also define plugins, stylesheets and other stuff by using a `mdconf.json` file in the same directory as the main markdown file. Example config:

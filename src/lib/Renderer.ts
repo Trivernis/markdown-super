@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as chokidar from 'chokidar';
 import * as puppeteer from 'puppeteer';
 import {JSDOM} from 'jsdom';
-import {CommandParser} from "./CommandParser";
+import {PreFormatter} from "./PreFormatter";
 import {EventEmitter} from "events";
 import {PDFFormat} from "puppeteer";
 import {MarkdownConfig} from "./MarkdownConfig";
@@ -15,7 +15,7 @@ export class Renderer extends EventEmitter {
     private md: MarkdownIt;
     private readonly beforeRendering: Function[];
     private readonly afterRendering: Function[];
-    private commandParser: CommandParser;
+    private commandParser: PreFormatter;
     private config: MarkdownConfig;
 
     constructor(config?: MarkdownConfig) {
@@ -24,7 +24,7 @@ export class Renderer extends EventEmitter {
         this.md = new MarkdownIt();
         this.beforeRendering = [];
         this.afterRendering = [];
-        this.commandParser = new CommandParser();
+        this.commandParser = new PreFormatter();
         this.configure();
     }
 
