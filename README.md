@@ -76,7 +76,7 @@ You can include your own stylesheet. It is applied after the default style. The 
 
 ## Variables
 
-Variables are prefixed with `$`.
+Variables are prefixed with `$`. They are case sensitive.
 You can define and use variables like this:
 
 Defining:
@@ -93,12 +93,47 @@ I'm eating an $fruit.
 There are system variables that are prefixed with `$$`.
 Currently you can use
 
-variable | value           | example value     
----------|-----------------|--------------
-$now     | current datetime| 31.07.2019 21:03:47
-$date    | current date    | 31.07.2019
-$time    | current time    | 21:03:47
+variable    | value                    | example value     
+------------|--------------------------|--------------
+$$now       | current datetime         | 31.07.2019 21:03:47
+$$date      | current date             | 31.07.2019
+$$time      | current time             | 21:03:47
+$$wordcount | words in the document    | 200
 
+All keys defined in the meta part of the `mdconfig.json` are also made
+available as system variables as long as they don't overide existing variables.
+
+## Environments
+
+These environments need the `div` plugin to work.
+
+```
+:::multiline
+One linebreak in here
+Is one linebreak in the document.
+:::
+
+:::centered
+Text is centered in here.
+:::
+
+:::page
+This is rendered on one or more extra pages.
+:::
+
+:::tabular
+              |                 |
+--------------|-----------------|----------
+only the body | of the table is | displayed
+and without   | borders         |
+:::
+
+:::title
+Title page environment
+All text is bigger
+and is kept on one page (if possible).
+:::
+```
 
 ## Configuration file
 
@@ -115,7 +150,13 @@ You can also define plugins, stylesheets and other stuff by using a `mdconf.json
   ],
   "stylesheets": [
     "customstyle.css"
-  ]
+  ],
+  "meta": { // all values defined here are also global variables
+    "author": "John Doe",
+    "title": "Markdown is great",
+    "subtitle": "Or is it?",
+    "hey": "Vsauce, Michael here!"
+  }
 }
 ```
 

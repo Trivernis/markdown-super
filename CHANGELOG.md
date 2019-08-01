@@ -16,4 +16,6 @@
 - support for `mdconf.json`config file
 - MathJax script to html
 - `mdconfig.json` extensions with `extends: "name"`
+- `mdconfig.json` metadata under `meta` that is available as global variables
 - variables prefixed with `$` and system variables prefixed with `$$`
+- default config `book`

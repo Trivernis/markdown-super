@@ -8,7 +8,7 @@ import {PreFormatter} from "./PreFormatter";
 import {EventEmitter} from "events";
 import {PDFFormat} from "puppeteer";
 import {MarkdownConfig} from "./MarkdownConfig";
-import {bundleImages, delay, includeMathJax} from "./utils";
+import {bundleImages, delay, includeMathJax, replaceMultilineBreaks} from "./utils";
 import {logger} from "./logger";
 
 export class Renderer extends EventEmitter {
@@ -191,6 +191,7 @@ export class Renderer extends EventEmitter {
             return dom;
         });
         this.useAfter(includeMathJax);
+        this.useAfter(replaceMultilineBreaks);
         // include all images as base64
         if (this.config.bundle)
             this.useAfter(bundleImages);

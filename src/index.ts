@@ -81,8 +81,13 @@ async function main() {
     } else if (args.pdf) {
 
         let outputFile = noExt(args.file) + '.pdf';
-        await renderer.renderPdf(args.file, outputFile);
-        console.log(`File stored as ${outputFile}`);
+        try {
+            await renderer.renderPdf(args.file, outputFile);
+            console.log(`File stored as ${outputFile}`);
+        } catch (err) {
+            logger.error(err);
+            console.error('Failed to render pdf.');
+        }
 
     } else {
 

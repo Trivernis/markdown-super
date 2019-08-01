@@ -54,6 +54,18 @@ export function includeMathJax(dom: JSDOM): JSDOM {
 }
 
 /**
+ * Replaces all linebreaks with <br> tags in a .multiline div (:::multiline:::)
+ * @param dom
+ */
+export function replaceMultilineBreaks(dom: JSDOM): JSDOM {
+    let document = dom.window.document;
+    let multis = document.querySelectorAll('.multiline p');
+    for (let multi of multis)
+        multi.innerHTML = multi.innerHTML.replace(/\n/g, '<br>');
+    return dom;
+}
+
+/**
  * Returns the markdown plugin associated with the pluginName
  * The plugin is first searched in the plugins definition.
  *  Then it is tried to require the plugin.

@@ -2,6 +2,7 @@ import * as fsx from 'fs-extra';
 import * as path from 'path';
 import {getMarkdownPlugin} from "./utils";
 import {logger} from "./logger";
+import {addGlobalVar, globalVariables} from "./globvars";
 
 const confName = 'mdconfig.json';
 const confDir = `${__dirname}../../configs`;
@@ -10,7 +11,8 @@ const confDir = `${__dirname}../../configs`;
  * Configs that can be extended
  */
 const configs: any = {
-    "full": `${confDir}/full-${confName}`
+    "full": `${confDir}/full-${confName}`,
+    "book": `${confDir}/book-${confName}`
 };
 
 /**
@@ -53,6 +55,17 @@ export class MarkdownConfig {
             this.plugins = new Set<string>(configData.plugins.map(getMarkdownPlugin));
         if (configData.stylesheets)
             this.stylesheets = new Set<string>(configData.stylesheets);
+        if (configData.meta) {
+            let meta: any = configData.meta;
+            // adding metadata as global variables
+            let definedGlobals = Object.keys(globalVariables);
+            for (let [key, value] of Object.entries(meta)) {
+                if (!definedGlobals.includes(key)) {
+                    // @ts-ignore
+                    addGlobalVar(key, value);
+                }
+            }
+        }
     }
 
     /**

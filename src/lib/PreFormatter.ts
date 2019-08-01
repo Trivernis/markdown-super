@@ -6,7 +6,7 @@ import {pageFormats} from "./formats";
 import {PDFFormat} from "puppeteer";
 import {getMarkdownPlugin} from "./utils";
 import {logger} from "./logger";
-import {globalVariables} from "./globvars";
+import {addGlobalVar, globalVariables} from "./globvars";
 
 export class PreFormatter {
     public projectFiles: string[];
@@ -20,7 +20,7 @@ export class PreFormatter {
         this.projectFiles = [];
         this.resolvePath = [];
         this.stylesheets = [];
-        this.variables = Object.assign({}, globalVariables);
+        this.variables = {};
     }
 
     async processCommands(doc: string, docpath: string, renderer: Renderer) {
@@ -99,6 +99,11 @@ export class PreFormatter {
         }
 
         let documentContent = outputLines.join('\n');
+        addGlobalVar('wordcount', () => {
+            let doc = documentContent.replace(/\[.*]/g, '').replace(/\s+/, ' ');
+            return doc.split(' ').length;
+        });
+        Object.assign(this.variables, globalVariables);     // assign globals right before replacing
         // replacing all variables with their values.
         for (let [key, value] of Object.entries(this.variables)) {
             let varReplacer: RegExp = new RegExp(`\\$${key}`, "gi");

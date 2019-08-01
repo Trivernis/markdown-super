@@ -1,0 +1,23 @@
+{
+  "plugins": [
+    "footnote",
+    "anchor",
+    "mark",
+    "sub",
+    "attrs",
+    "abbr",
+    "imsize",
+    "highlightjs",
+    "smartarrows",
+    "math",
+    "div",
+    "multimd-table",
+    "toc-done-right",
+    "center-text",
+    "header-sections",
+    "task-checkbox",
+    "underline",
+    "implicit-figures",
+    "inline-comments"
+  ]
+}

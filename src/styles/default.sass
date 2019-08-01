@@ -36,6 +36,15 @@ figcaption
   margin: 0.5em
   font-style: italic
 
+table
+  border-collapse: collapse
+  td, th
+    padding: 0.2em
+  th
+    border-bottom: 2px solid $primary
+  td
+    border-bottom: 1px solid $inactive
+
 .footnote-backref
   display: none
 
@@ -44,8 +53,31 @@ figcaption
   page-break-after: always
   page-break-inside: avoid
 
+.page.title
+  page-break-before: avoid
+
 .newpage
   page-break-after: always
 
 .text-align-center
   text-align: center
+
+.centered
+  text-align: center
+  table
+    margin: auto
+
+.tabular
+  thead
+    display: none
+  td
+    border: none
+
+.title
+  font-size: x-large
+  h1
+    font-size: 1.8em
+  h2
+    font-size: 1.3em
+  table
+    font-size: x-large
