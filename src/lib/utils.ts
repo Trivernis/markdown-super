@@ -5,7 +5,8 @@ import fetch from "node-fetch";
 import {logger} from "./logger";
 import {markdownPlugins} from "./plugins";
 
-const mathJaxUrl = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML';
+const mathJaxPath: string = __dirname + '../../../node_modules/mathjax/MathJax.js';
+const mathJaxConfig: string = '?config=MML_HTMLorMML';
 
 /**
  * Bundles all images in the image tags.
@@ -48,7 +49,8 @@ export async function bundleImages(dom: JSDOM, mainfile: string): Promise<JSDOM>
 export function includeMathJax(dom: JSDOM): JSDOM {
     let document = dom.window.document;
     let scriptTag = document.createElement('script');
-    scriptTag.src = mathJaxUrl;
+    scriptTag.src = mathJaxPath + mathJaxConfig;
+    scriptTag.type = 'text/javascript';
     document.head.appendChild(scriptTag);
     return dom;
 }

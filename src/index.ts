@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import {Renderer} from "./lib/Renderer";
 import {writeFile} from 'fs-extra';
 import {extname, dirname} from 'path';
